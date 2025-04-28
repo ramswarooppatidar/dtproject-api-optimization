@@ -8,6 +8,8 @@ import javax.management.loading.PrivateClassLoader;
 
 import org.springframework.stereotype.Service;
 
+import com.deepthought.yardapi.customException.InvalidInputException;
+import com.deepthought.yardapi.customException.SlotNotFoundException;
 import com.deepthought.yardapi.enumerator.ConatinerSize;
 import com.deepthought.yardapi.model.Container;
 import com.deepthought.yardapi.model.Slot;
@@ -18,6 +20,11 @@ public class YardService {
 
 	private static final int INVALID = 10_000;
 	public Map<String, Object> findBestSpot(YardRequest yardRequest){
+		
+		if (yardRequest == null || yardRequest.getContainer() == null || yardRequest.getSlot() == null || yardRequest.getSlot().isEmpty()) {
+		    throw new InvalidInputException("YardRequest, Container, or Slot list cannot be null or empty.");
+		}
+
 		Container c = yardRequest.getContainer();
 		List<Slot> slots = yardRequest.getSlot();
 		Map<String, Object> resultMap = new HashMap<>();
@@ -32,6 +39,9 @@ public class YardService {
 				score = minScore;
 				bestSlot = slot;
 			}
+		}
+		if(bestSlot == null) {
+			 throw new SlotNotFoundException("No valid slot found for the container.");
 		}
 		resultMap.put("conatiner", c.getId());
 		resultMap.put("x", bestSlot.getX());
